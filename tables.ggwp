@@ -1,0 +1,6 @@
+pruebita
+id INTEGER
+num_ejemplo INTEGER
+texto VARCHAR(20)
+-----------------------------------------
+
