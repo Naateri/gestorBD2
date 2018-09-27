@@ -8,7 +8,8 @@ int main (int argc, char *argv[]) {
 		str query;
 		getline(std::cin, query);
 		//DB.createTable(query);
-		DB.insert_row(query);
+		//DB.insert_row(query);
+		DB.select_data(query);
 	}
 	return 0;
 }
