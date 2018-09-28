@@ -9,7 +9,7 @@ int main (int argc, char *argv[]) {
 		getline(std::cin, query);
 		//DB.createTable(query);
 		//DB.insert_row(query);
-		DB.select_data(query);
+		DB.i_query(query);
 	}
 	return 0;
 }
