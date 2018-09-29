@@ -4,6 +4,7 @@ str create_tab = "CREATE TABLA ";
 str insert_into = "INSERTAR EN "; //11
 str select_q = "SELECT * FROM ";
 str del = "DELETE FROM ";
+str upd = "UPDATE FROM ";
 
 txt_file tables_txt;
 read_file tables_txt2;
@@ -34,6 +35,11 @@ void DataBase::i_query(str query){
 		delete_data(query);
 		return;
 	}
+	temp = query.substr(0, 12); //temp = "DELETE FROM "
+	if (temp == upd){
+		update_data(query);
+		return;
+	}	
 	std::cout << "Sintaxis incorrecta. Vuelva a intentarlo\n";
 	return;
 }
@@ -244,6 +250,82 @@ bool DataBase::interpret_query_d(str query, str& name, str_vec& values, str& col
 	return 1;
 }
 
+bool DataBase::interpret_query_u(str query, str& name, str_vec& values, str& column, str_vec& columns){
+	str temp, temp2;
+	int i;
+	values.clear();
+	temp = query.substr(0, 12); //temp = "UPDATE FROM "
+	if (temp != upd){
+		std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.\n";
+		return 0;
+	}
+	i = 12;
+	name.clear();
+	while (query[i] != ' '){ //getting the name of the table
+		name += query[i];
+		i++;
+	}
+	i++; //so query[i] != ' '
+	for (int j = 0; j < 4; j++){
+		temp2 += query[i++];
+	}
+	if (temp2 != "SET "){
+		std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.\n";
+		return 0;
+	}
+	while ( /*query[i] != 'W' && */query[i] != ' '){
+		temp.clear();
+		if (query[i] == 'W'){
+			temp2.clear();
+			for (int j = 0; j < 6; j++){
+				temp2 += query[i+j];
+			}
+			if (temp2 == "WHERE ") break;
+		}
+		temp2.clear();
+		while (query[i] != ' ' && query[i] != ';'){ //filling with type
+			temp += query[i];
+			i++;
+		}
+		i++;
+		columns.push_back(temp);
+		if (query[i] != '=') {
+			std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.\n";
+			return 0;
+		}
+		i++;
+		i++; //i is not empty now
+		temp2.clear();
+		while (query[i] != ' '){ //value
+			temp2 += query[i++];
+		}
+		values.push_back(temp2);
+		i++; //space omitted
+	}
+	i += 6; //ommitting "WHERE "
+	this->query_where = 1; //WHERE SYNTAX ENABLED
+	this->values_to_compare.clear(); //where the values to compare will be added
+	char comp;
+	column.clear();
+	while (query[i] != ' '){
+		column += query[i++]; //column name is being stored
+	}
+	i++; //i should now be the comparator
+	comp = query[i++]; //comp is the comparator, and i is a space
+	//this->comparator = findInArray(comp, comparisons, 3);
+	this->comparator = 0;
+	//if comp is not in comparisons std::cout << "Comparador no permitido.\n";
+	i++;
+	temp.clear(); //this should be inside another loop
+	//Will be fixed when I have to do boolean operators
+	while (query[i] != ' '){ //getting the value of the atribute
+		temp += query[i];
+		i++;
+	}
+	this->values_to_compare.push_back(temp);
+	return 1;
+}
+
 void DataBase::createTable(str query){
 	str name;
 	strp_vec vec;
@@ -366,6 +448,48 @@ void DataBase::delete_data(str query){
 	delete [] file_temp;
 	
 	std::cout << "Valores eliminados.\n";
+	
+	this->query_where = 0;
+}
+
+void DataBase::update_data(str query){
+	str name, result, column, temp_name;
+	str_vec columns, values;
+	txt_file outfile;
+	int i;
+	result.clear();
+	
+	if (!interpret_query_u(query, name, values, column, columns)) return;
+	temp_name = name;
+	temp_name = temp_name + "_temp.table"; //to create name_temp.table
+	
+	char* file_temp = new char[temp_name.size() + 1]; //data will be temporarily stored there
+	char* file_name = new char[name.size() + 1];
+	for (i = 0; i < temp_name.size(); i++){
+		file_temp[i] = temp_name.at(i);
+	}
+	file_temp[i] = '\0';
+	outfile.open(file_temp);
+	
+	temp_name = name;
+	
+	name += ".table";
+	for (i = 0; i < name.size(); i++){
+		file_name[i] = name.at(i);
+	}
+	file_name[i] = '\0';
+	tables_txt2.open(file_name, std::fstream::app);
+	this->update_query(tables_txt2, outfile, columns, values, temp_name, column); //PRETTY MUCH the same as delete_query
+	tables_txt2.close();
+	outfile.close();
+	
+	remove(file_name); //removing old data
+	std::rename(file_temp, file_name); //renaming so name.table still exists with the new data
+	
+	delete [] file_name;
+	delete [] file_temp;
+	
+	std::cout << "Valores actualizados.\n";
 	
 	this->query_where = 0;
 }
@@ -651,7 +775,7 @@ void DataBase::delete_query(read_file& file, txt_file& outfile, str_vec columns,
 				temp_name += temp2.at(i);
 			}
 		}
-		if (! last_col ){ //lines to 579 to 620 (aprox)
+		if (! last_col ){
 			temp3 = temp_name;
 			if (pos == position){
 				last_col = 1;
@@ -660,7 +784,7 @@ void DataBase::delete_query(read_file& file, txt_file& outfile, str_vec columns,
 					val_to_compare = stringToLL(values_to_compare.at(0) );
 					this->query_where = 1;
 					if (this->comparator == 0){
-						if (value_found < val_to_compare) to_insert = 1;
+						if (value_found == val_to_compare) to_insert = 1;
 					}
 					else if (this->comparator == 1){
 						if (value_found > val_to_compare) to_insert = 1;
@@ -674,7 +798,7 @@ void DataBase::delete_query(read_file& file, txt_file& outfile, str_vec columns,
 					vchar_value_found = temp3;
 					vchar_val_to_compare = values_to_compare.at(0);
 					if (this->comparator == 0){
-						if (vchar_value_found < vchar_val_to_compare) to_insert = 1;
+						if (vchar_value_found == vchar_val_to_compare) to_insert = 1;
 					}
 					else if (this->comparator == 1){
 						if (vchar_value_found > vchar_val_to_compare) to_insert = 1;
@@ -690,6 +814,183 @@ void DataBase::delete_query(read_file& file, txt_file& outfile, str_vec columns,
 		}
 		if (first_line)outfile << temp << std::endl;
 		if ( ! this->to_insert && !first_line) outfile << temp << std::endl;
+		this->to_insert = 0;
+		first_line = false;
+	}
+}
+
+void DataBase::update_query(read_file& file, txt_file& outfile, str_vec columns, str_vec values, str name, str column){
+	str temp, temp2, temp3, temp_name, vchar_value_found, vchar_val_to_compare;
+	str_vec res;
+	uint_vec types (columns.size() ); //types: if boolean operators are used
+	uint_vec positions (columns.size()); //positions: positions of the columns in the table
+	u_int type, j;
+	u_int it;
+	int pos = -1, i; //so if there's not a WHERE clause, the IF will never begin
+	LL value_found, val_to_compare;
+	read_file getting_columns;
+	bool broke = 0, last_col = 0;
+	
+	temp_name = name + ".table";
+	char* file_name = new char[temp_name.size() + 1];
+	for (i = 0; i < temp_name.size(); i++){
+		file_name[i] = temp_name.at(i);
+	}
+	file_name[i] = '\0';
+	
+	getting_columns.open(file_name); //copy of file
+	
+	delete [] file_name;
+	temp_name.clear();
+	temp.clear();
+	
+	//if (this->query_where){ //finding the atributes
+	getline(getting_columns, temp2);
+	for(i = 0; i < temp2.size(); i++){
+		if (temp2.at(i) == ',') {
+			if (temp == column ){
+				type = finding_atribute_type(temp, name, pos);//finding atribute type: 0->INTEGER, 1->VARCHAR(N)
+				broke = 1;
+				break;
+				//pos will store the number of column we have to check at the table
+			} //else
+			if (broke) {
+				break;
+			}
+			temp.clear();
+		} else {
+			temp += temp2.at(i);
+		}
+	}
+	if (!broke){
+		if (temp == column ){
+			type = finding_atribute_type(temp, name, pos);//finding atribute type: 0->INTEGER, 1->VARCHAR(N), 2->DATE
+		}
+	}
+	temp.clear();
+	for (it = 0; it < columns.size(); it++){ //getting positions of columns to update
+		broke = 0;
+		int k = 0;
+		for(j = 0; j < temp2.size(); j++){
+			if (temp2.at(j) == ',') {
+				if (temp == columns.at(it) ){
+					positions.at(it) = k; //keeping a relation: columns[it] position is in positions[it]
+					broke = 1;
+					break;
+					//pos will store the number of column we have to check at the table
+				} //else
+				temp.clear();
+				k++;
+			} else {
+				temp += temp2.at(j);
+			}
+		}
+		if (!broke){
+			if (temp == columns.at(it) ){
+				positions.at(it) = k;
+			}
+		}
+	}
+	bool first_line = true;
+	while (! file.eof() ){
+		temp2.clear();
+		getline(file, temp2);
+		temp.clear();
+		int position = 0;
+		temp_name.clear();
+		last_col = 0;
+		for(i = 0; i < temp2.size(); i++){ //getting the lines of data
+			if ( temp2.at(i) == ',' ) {
+				temp3 = temp_name;
+				if (pos == position){
+					last_col = 1;
+					if (type == 0){ //do the cast to the type it is
+						value_found = stringToLL(temp3);
+						val_to_compare = stringToLL(values_to_compare.at(0) );
+						this->query_where = 1;
+						if (this->comparator == 0){ //in this case: to_insert = to_update
+							if (value_found == val_to_compare) to_insert = 1;
+						}
+						else if (this->comparator == 1){
+							if (value_found > val_to_compare) to_insert = 1;
+						}
+						else {
+							if (value_found == val_to_compare){
+								to_insert = 1;
+							}
+						}
+					} else if (type == 1){
+						vchar_value_found = temp3;
+						vchar_val_to_compare = values_to_compare.at(0);
+						if (this->comparator == 0){
+							if (vchar_value_found == vchar_val_to_compare) to_insert = 1;
+						}
+						else if (this->comparator == 1){
+							if (vchar_value_found > vchar_val_to_compare) to_insert = 1;
+						}
+						else {
+							if (vchar_value_found == vchar_val_to_compare) to_insert = 1;
+						}
+					} else {
+						; //same as above but with date
+					}
+					
+					//do the respective comparison with this->comparator and the value
+					//THIS COMPARATOR: 0 <, 1 >, 2 =
+					//for now, the value is only this->values_to_compare.at(0)
+				}
+				position++;
+				temp += ',';
+				temp3.clear();
+				temp_name.clear();
+			} else {
+				temp += temp2.at(i);
+				temp_name += temp2.at(i);
+			}
+		}
+		if (! last_col ){ //lines to 579 to 620 (aprox)
+			temp3 = temp_name;
+			if (pos == position){
+				last_col = 1;
+				if (type == 0){ //do the cast to the type it is
+					value_found = stringToLL(temp3);
+					val_to_compare = stringToLL(values_to_compare.at(0) );
+					this->query_where = 1;
+					if (this->comparator == 0){
+						if (value_found == val_to_compare) to_insert = 1;
+					}
+					else if (this->comparator == 1){
+						if (value_found > val_to_compare) to_insert = 1;
+					}
+					else {
+						if (value_found == val_to_compare){
+							to_insert = 1;
+						}
+					}
+				} else if (type == 1){
+					vchar_value_found = temp3;
+					vchar_val_to_compare = values_to_compare.at(0);
+					if (this->comparator == 0){
+						if (vchar_value_found == vchar_val_to_compare) to_insert = 1;
+					}
+					else if (this->comparator == 1){
+						if (vchar_value_found > vchar_val_to_compare) to_insert = 1;
+					}
+					else {
+						if (vchar_value_found == vchar_val_to_compare) to_insert = 1;
+					}
+				} else {
+					; //same as above but with date
+				}
+			}
+			
+		}
+		if (first_line)outfile << temp << std::endl;
+		if ( this->to_insert && !first_line){
+			temp = updateRow(temp, positions, values);
+			outfile << temp << std::endl;
+		} else if (!first_line) outfile << temp << std::endl;
+		
 		this->to_insert = 0;
 		first_line = false;
 	}
