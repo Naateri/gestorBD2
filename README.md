@@ -4,8 +4,8 @@ Sintaxis del gestor:
 
 ## Tipos de dato:
 
--INTEGER
--VARCHAR(N)
+- INTEGER
+- VARCHAR(N)
 
 ## Creación de tablas:
 
