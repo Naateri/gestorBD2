@@ -26,3 +26,15 @@ Sintaxis del gestor:
 ## Actualización de datos:
 
  >UPDATE nombre_tabla SET atributo = valor WHERE atributo = valor ;
+
+## Inserción de múltiples datos:
+
+ >INSERTAR VARIOS EN nombre_tabla I/Rnum1,num2/C ;
+
+I: incrementador.
+Rnum1,num2: Aleatorio entre num1 y num2 (ambos números).
+C: Caracter (nombre_campo + I)
+
+Se ponen tantas letras como campos haya.
+
+####NO OLVIDARSE DE PONER ESPACIO ; LUEGO DE CADA SENTENCIA
