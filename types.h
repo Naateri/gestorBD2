@@ -6,6 +6,7 @@
 #include <utility>
 #include <fstream>
 #include <cstdio>
+#include <ctime>
 
 //defines mainly used for comparators
 #define SMALLER <
@@ -32,6 +33,7 @@ typedef std::vector<Table*> table_vec;
 typedef std::vector<u_int> uint_vec;
 typedef std::vector<VCHAR*> vchar_vec;
 typedef std::vector<str> str_vec;
+typedef std::vector<int> int_vec;
 typedef std::stringstream ss;
 typedef std::ofstream txt_file;
 typedef std::ifstream read_file;

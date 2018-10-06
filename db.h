@@ -14,6 +14,7 @@ private:
 	bool interpret_query_s(str query, str& name, str_vec& values, str& column);
 	bool interpret_query_d(str query, str& name, str_vec& values, str& column);
 	bool interpret_query_u(str query, str& name, str_vec& values, str& column, str_vec& columns);
+	bool interpret_query_i_m(str query, str& name, str_vec& values);
 	
 	str_vec select_query(read_file& file, str_vec columns, str name, str column); //each position at the vec returned is a row of data
 	void delete_query(read_file& file, txt_file& outfile, str_vec columns, str name, str column);
@@ -29,4 +30,5 @@ public:
 	void select_data(str query);
 	void delete_data(str query);
 	void update_data(str query);
+	void insert_multiple(str query);
 };

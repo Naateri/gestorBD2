@@ -5,6 +5,7 @@ str insert_into = "INSERTAR EN "; //11
 str select_q = "SELECT * FROM ";
 str del = "DELETE FROM ";
 str upd = "UPDATE FROM ";
+str multi_insert = "INSERTAR VARIOS EN ";
 
 txt_file tables_txt;
 read_file tables_txt2;
@@ -39,7 +40,12 @@ void DataBase::i_query(str query){
 	if (temp == upd){
 		update_data(query);
 		return;
-	}	
+	}
+	temp = query.substr(0, 19); //temp = "INSERTAR VARIOS EN "
+	if (temp == multi_insert){
+		insert_multiple(query);
+		return;
+	}
 	std::cout << "Sintaxis incorrecta. Vuelva a intentarlo\n";
 	return;
 }
@@ -326,6 +332,41 @@ bool DataBase::interpret_query_u(str query, str& name, str_vec& values, str& col
 	return 1;
 }
 
+bool DataBase::interpret_query_i_m(str query, str& name, str_vec& values){
+	str temp, temp2;
+	int i;
+	values.clear();
+	temp = query.substr(0, 19); //temp = "INSERTAR EN "
+	if (temp != multi_insert){
+		std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.\n";
+		return 0;
+	}
+	i = 19;
+	name.clear();
+	while (query[i] != ' '){ //getting the name of the table
+		name += query[i];
+		i++;
+	}
+	i++; //so query[i] != ' '
+	/*for (int j = 0; j < 8; j++){
+		temp2 += query[i++];
+	}
+	if (temp2 != "VALORES "){
+		std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.\n";
+		return 0;
+	}*/
+	while (query[i] != ';' && query[i] != ' '){
+		temp.clear();
+		while (query[i] != ' ' && query[i] != ';'){ //filling with I; Rnum1,num2 or C
+			temp += query[i];
+			i++;
+		}
+		i++;
+		values.push_back(temp);
+	}
+	return 1;
+}
+
 void DataBase::createTable(str query){
 	str name;
 	strp_vec vec;
@@ -378,6 +419,31 @@ void DataBase::insert_row(str query){
 	delete [] file_name;
 	std::cout << "Datos insertados.\n";
 	
+}
+
+void DataBase::insert_multiple(str query){ //INSERTAR VARIOS EN tabla I/Rnum1,num2/C ;
+	str name;
+	str_vec vec;
+	int i;
+	
+	if (!interpret_query_i_m(query, name, vec)) return;
+	std::cout << "Insertando 1000 filas en " << name << std::endl;
+	name += ".table";
+	char* file_name = new char[name.size() + 1];
+	for (i = 0; i < name.size(); i++){
+		file_name[i] = name.at(i);
+	}
+	
+	file_name[i] = '\0';
+	tables_txt.open(file_name, std::fstream::app);
+	tables_txt2.open(file_name);
+	//write the info retrieved to file_name
+	//writeInsert(tables_txt, vec);
+	write_multiple(tables_txt, tables_txt2, vec);
+	tables_txt.close();
+	
+	delete [] file_name;
+	std::cout << "Datos insertados.\n";
 }
 
 void DataBase::select_data(str query){
