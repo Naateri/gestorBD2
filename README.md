@@ -1,5 +1,5 @@
-#No lean esto por que es una mierda 
-#Gestor Base de Datos II
+
+#Gestor de mierda de Base de Datos II
 
 Sintaxis del gestor:
 
