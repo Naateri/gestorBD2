@@ -44,9 +44,9 @@ Se ponen tantas letras como campos haya.
 
 ##Crear índice:
 
-  >CREATE INDEX index_name ON no_se_que_va_aqui_juan_apura
+  >CREATE INDEX index_name ON table (column) ;
 
-##Usar índice en consulta SELECT_
+##Usar índice en consulta SELECT
 
   >SELECT * FROM tabla WHERE columna = valor IDX = index.idx ;
 
