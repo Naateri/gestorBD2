@@ -38,4 +38,16 @@ C: Caracter (nombre_campo + I)
 
 Se ponen tantas letras como campos haya.
 
-####NO OLVIDARSE DE PONER ESPACIO ; LUEGO DE CADA SENTENCIA
+##Mandar árbol a ram:
+
+  >A RAM (indice.idx);
+
+##Crear índice:
+
+  >CREATE INDEX index_name ON no_se_que_va_aqui_juan_apura
+
+##Usar índice en consulta SELECT_
+
+  >SELECT * FROM tabla WHERE columna = valor IDX = index.idx ;
+
+###NO OLVIDARSE DE PONER ESPACIO ; LUEGO DE CADA SENTENCIA EXCEPTO A RAM
