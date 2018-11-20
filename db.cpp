@@ -6,9 +6,12 @@ str select_q = "SELECT * FROM ";
 str del = "DELETE FROM ";
 str upd = "UPDATE FROM ";
 str multi_insert = "INSERTAR VARIOS EN ";
+str create_index = "CREATE INDEX ";
+str a_ram = "A RAM (";
 
 txt_file tables_txt;
 read_file tables_txt2;
+unsigned t0, t1;
 
 DataBase::DataBase(){
 	;
@@ -21,6 +24,16 @@ void DataBase::i_query(str query){
 		createTable(query);
 		return;
 	}
+	temp = query.substr(0, 13); //temp = "CREATE INDEX "
+	if (temp == create_index){
+		createIndex(query); 
+		return;
+	}
+	temp = query.substr(0, 7); //temp = "A RAM ("
+	if (temp == a_ram){
+		aRam(query); 
+		return;
+	}
 	temp = query.substr(0, 12); //temp = "INSERTAR EN "
 	if (temp == insert_into){
 		insert_row(query);
@@ -28,7 +41,14 @@ void DataBase::i_query(str query){
 	}
 	temp = query.substr(0, 14); //temp = "SELECT * FROM "
 	if (temp == select_q) {
+		t0=clock();
+		
 		select_data(query);
+		
+		t1 = clock();
+		double time = (double(t1-t0)/CLOCKS_PER_SEC);
+		std::cout << "Execution Time: " << time << std::endl;
+
 		return;
 	}
 	temp = query.substr(0, 12); //temp = "DELETE FROM "
@@ -123,6 +143,83 @@ bool DataBase::interpret_query(str query, str& name, strp_vec& vec, char_name_ve
 	return 1;
 }	
 
+bool DataBase::interpret_query_index(str query, str& name_index, str& name_table, str& name_col){
+	str temp, type, type_name, char_num;
+	int i, int_count, char_count;
+	int_count = char_count = 0;
+
+	temp.clear();
+	
+	//CREATE INDEX indi2 ON persona (dpto);
+	//CREATE INDEX indi1 ON persona (id);
+	//optiene en nombre del index
+	i = 13;
+	name_index.clear();
+	while (query[i] != ' '){
+		name_index += query[i];
+		i++;
+	}
+	i++; //so query[i] != ' '
+	//end
+
+	temp += query[i]; 
+	temp += query[i+1];
+	std::cout << " temp: " << temp << '\n';
+	if(temp != "ON")
+	{
+		std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.1\n";
+		return 0;
+	}
+	i += 3;
+
+	name_table.clear();
+	while (query[i] != ' '){
+		name_table += query[i];
+		i++;
+	}
+	i++; //so query[i] != ' '
+
+	if (query[i] != '(')
+	{
+		std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.2\n";
+		return 0;
+	}
+	i++;
+	name_col.clear();
+	while (query[i] != ')'){
+		name_col += query[i];
+		i++;
+	}
+	i++;
+	if (query[i] != ';')
+	{
+		std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.3\n";
+		return 0;
+	}
+
+	return 1;	
+}
+
+bool DataBase::interpret_query_aRam(str query, str& name_index) {
+	str temp, temp_name_table, temp_name_col;
+	u_int i;	
+
+	i = 7;
+	name_index.clear();
+	while (query[i] != ')'){
+		name_index += query[i];
+		i++;
+	}
+
+	if (query[i+1] != ';')
+	{
+		std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.3\n";
+		return 0;
+	}
+
+	return 1;	
+}
+
 bool DataBase::interpret_query_i(str query, str& name, str_vec& values){
 	str temp, temp2;
 	int i;
@@ -174,13 +271,15 @@ bool DataBase::interpret_query_s(str query, str& name, str_vec& values, str& col
 		i++;
 	}
 	i++;
+
+
 	if (query[i] == ';') return 1;
 	//WHERE clause
 	//WHERE clause should begin here
 	temp.clear();
 	for(int j = 0; j < 6; j++){
 		temp += query[i++];
-	}
+	}		   //IDX = 
 	if (temp != "WHERE "){
 		std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.\n";
 		return 0;
@@ -205,9 +304,35 @@ bool DataBase::interpret_query_s(str query, str& name, str_vec& values, str& col
 		i++;
 	}
 	this->values_to_compare.push_back(temp);
+
+	//index
+	i++;
+	if (query[i] == ';') 
+	{
+		this->query_index = 0;
+		return 1;
+	}
+	this->query_index = 1;
+	temp.clear();
+	for(int j = 0; j < 6; j++){//"IDX = ""
+		temp += query[i++];
+	}
+	if (temp != "IDX = "){
+		std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.\n";
+		return 0;
+	}
+
+	temp.clear(); //this should be inside another loop
+	//Will be fixed when I have to do boolean operators
+	while (query[i] != ' '){ //getting the value of the atribute
+		temp += query[i];
+		i++;
+	}
+
+	this->values_to_compare.push_back(temp);
+
 	return 1;
 }
-
 
 bool DataBase::interpret_query_d(str query, str& name, str_vec& values, str& column){
 	str temp, temp2;
@@ -388,6 +513,7 @@ void DataBase::createTable(str query){
 		file_name[i] = name.at(i);
 	}
 	file_name[i] = '\0';
+
 	tables_txt.open(file_name);
 	writeHeaderTable(tables_txt, temp);
 	tables_txt.close();
@@ -396,6 +522,95 @@ void DataBase::createTable(str query){
 	
 	std::cout << "Tabla " << temp->getName() << " creada.\n";
 	temp->desc();
+}
+
+void DataBase::createIndex(str query){
+	str name_index, name_table, name_col, tex, temp_name_table;
+	str_vec vec_data, vec_filas, vec_col;
+	int i;
+	
+	if (!interpret_query_index(query, name_index, name_table, name_col)) return;
+	
+	name_index += ".idx";
+	char* file_name = new char[name_index.size() + 1];
+	for (i = 0; i < name_index.size(); i++){
+		file_name[i] = name_index.at(i);
+	}
+	file_name[i] = '\0';
+
+	temp_name_table = name_table;
+	name_table += ".table";
+
+	char* file_tabe = new char[name_table.size() + 1];
+	for (i = 0; i < name_table.size(); i++){
+		file_tabe[i] = name_table.at(i);
+	}
+	file_tabe[i] = '\0';
+
+	str_tree *m_tree =  new str_tree(name_index, name_col, temp_name_table);
+	
+	tables_txt2.open(file_tabe, std::fstream::app);
+	this->select_query2(tables_txt2, m_tree, name_col);
+	tables_txt2.close();
+	
+
+	tables_txt.open(file_name, std::fstream::app);	
+	m_tree->writeFile(tables_txt);
+	tables_txt.close();
+	
+	delete [] file_name;
+	
+	indices.push_back(m_tree);
+
+	std::cout << "Se creo el INDEX\n";	
+}
+
+void DataBase::aRam(str query) {
+	str name_index, temp, temp_name_table, temp_name_col;
+	u_int i;
+	
+	if (!interpret_query_aRam(query, name_index)) return;
+
+	for (int i = 0; i < indices.size(); i++)
+	{	
+		if(indices[i]->m_name_index == name_index)			
+			return ;		
+	}
+
+	temp.clear();
+	char* file_name = new char[name_index.size() + 1];
+	for (i = 0; i < name_index.size(); i++){
+		file_name[i] = name_index.at(i);
+	}
+	file_name[i] = '\0';
+	
+	tables_txt2.open(file_name, std::fstream::app);
+
+	i=0;
+	getline(tables_txt2, temp);
+	
+
+	temp_name_table.clear();
+	while (temp[i] != ','){
+		temp_name_table += temp[i];
+		i++;
+	}
+
+	i++;
+	temp_name_col.clear();
+	while (i < temp.size()){
+		temp_name_col += temp[i];
+		i++;
+	}
+
+	str_tree *m_tree =  new str_tree(name_index, temp_name_col, temp_name_table);
+	std::cout << "init read" << std::endl;
+	this->read_index(tables_txt2, m_tree);
+	std::cout << "end read" << std::endl;
+	tables_txt2.close();
+
+	indices.push_back(m_tree);
+	//m_tree->inOrder();
 }
 
 void DataBase::insert_row(str query){
@@ -417,8 +632,7 @@ void DataBase::insert_row(str query){
 	tables_txt.close();
 	
 	delete [] file_name;
-	std::cout << "Datos insertados.\n";
-	
+	std::cout << "Datos insertados.\n";	
 }
 
 void DataBase::insert_multiple(str query){ //INSERTAR VARIOS EN tabla I/Rnum1,num2/C ;
@@ -446,13 +660,14 @@ void DataBase::insert_multiple(str query){ //INSERTAR VARIOS EN tabla I/Rnum1,nu
 	std::cout << "Datos insertados.\n";
 }
 
-void DataBase::select_data(str query){
+void DataBase::select_data(str query){ // SELECT * FROM pruebita
 	str name, result, column, temp_name;
 	str_vec vec;
 	int i;
 	result.clear();
-	
+
 	if (!interpret_query_s(query, name, vec, column)) return;
+
 	temp_name = name;
 	name += ".table";
 	char* file_name = new char[name.size() + 1];
@@ -464,7 +679,7 @@ void DataBase::select_data(str query){
 	//get the info from the select clause
 	vec = this->select_query(tables_txt2, vec, temp_name, column);
 	tables_txt2.close();
-	
+
 	delete [] file_name;
 	
 	for (int i = 0; i < vec.size(); i++){
@@ -590,10 +805,40 @@ u_int DataBase::finding_atribute_type(str type_name, str table_name, int& pos){
 	}
 }
 
-
 str_vec DataBase::select_query(read_file& file, str_vec columns, str name, str column){
 	str temp, temp2, temp3, temp_name, vchar_value_found, vchar_val_to_compare;
 	str_vec res;
+
+	//A RAM (indi1.idx);
+	//A RAM (indi2.idx);
+	//SELECT * FROM persona WHERE id = 7933 ;
+	//SELECT * FROM persona WHERE id = 7933 IDX = indi1.idx ;
+	//SELECT * FROM persona WHERE dpto = 5 ;
+	//SELECT * FROM persona WHERE dpto = 5 IDX = indi2.idx ;
+
+	if (this->query_index) { 
+
+		u_int pos_index = indices.size()+1;
+		for (int i = 0; i < indices.size(); i++)
+		{	
+			if(indices[i]->m_name_index == values_to_compare[1])			
+				pos_index = i;		
+		}
+
+		if(pos_index == indices.size()+1) {
+			std::cout << "No existe el indice" << std::endl;
+			return res;
+		}
+		if(indices[pos_index]->m_name_table != name) {
+			std::cout << "No coinside la tabla del indice" << std::endl;
+			return res;
+		}
+
+		//indices[pos_index]->inOrder();
+
+		return indices[pos_index]->find(values_to_compare[0]);
+	}
+
 	uint_vec types (columns.size() );
 	u_int type;
 	int pos = -1, i; //so if there's not a WHERE clause, the IF will never begin
@@ -737,6 +982,97 @@ str_vec DataBase::select_query(read_file& file, str_vec columns, str name, str c
 		first_line = false;
 	}
 	return res;
+}
+
+void DataBase::select_query2(read_file& file, str_tree* m_tree, str column){
+	str temp_fila, temp;
+	u_int pos_column, j, i;
+
+	j = 0;
+	pos_column = 0;
+	temp.clear();
+	getline(file, temp_fila);
+	while(j < temp_fila.size())
+	{
+		if(temp_fila[j] != ',')
+		{
+			temp += temp_fila[j];
+		}
+		else if(temp != column)
+		{
+			pos_column++;
+		}
+		else
+			break;
+		j++;
+	}
+
+	while (! file.eof() ){
+		j = 0;
+		i = 0;
+		temp_fila.clear();
+		temp.clear();
+		getline(file, temp_fila);
+		
+
+		while(j <= temp_fila.size())
+	 	{
+			if(temp_fila[j] != ',' && j != temp_fila.size())
+			{
+				temp += temp_fila[j];
+			}
+			else if(i != pos_column)
+			{
+				temp.clear();
+				i++;
+			}
+			else
+			{
+				m_tree->insert(temp, temp_fila);
+				break;
+			}
+			j++;
+		}
+	}
+	
+}
+
+void DataBase::read_index(read_file& file, str_tree* m_tree) {
+	str temp_fila, temp_data, temp_f;
+	u_int size_fila, j, i;
+	j=1;
+
+	while (! file.eof() ){
+		getline(file, temp_fila);
+		i = 0;
+		size_fila = temp_fila.size();
+		temp_data.clear();
+		temp_f.clear();
+
+		if(size_fila == 0)
+			break;
+
+		while(temp_fila[i] != ';')
+		{
+			temp_data += temp_fila[i];
+			i++;
+		}
+		i++;
+
+		temp_f.clear();
+		while(i < size_fila)
+		{
+			if (temp_fila[i] != ';')
+				temp_f += temp_fila[i];
+			else
+			{
+				m_tree->insert(temp_data, temp_f);
+				temp_f.clear();
+			}
+			i++;
+		}
+		m_tree->insert(temp_data, temp_f);
+	}
 }
 
 void DataBase::delete_query(read_file& file, txt_file& outfile, str_vec columns, str name, str column){

@@ -4,4 +4,21 @@ num_ejemplo INTEGER
 texto VARCHAR(20)
 -----------------------------------------
 
+persona
+id INTEGER
+nombre VARCHAR(100)
+dpto INTEGER
+-----------------------------------------
+
+persona
+id INTEGER
+nombre VARCHAR(100)
+dpto INTEGER
+-----------------------------------------
+
+persona
+id INTEGER
+nombre VARCHAR(100)
+dpto INTEGER
+-----------------------------------------
 

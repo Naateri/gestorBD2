@@ -52,6 +52,7 @@ void writeInsert(txt_file& file, str_vec t){
 	//file << '\n';
 }
 
+
 void write_multiple(txt_file& file, read_file& file2, str_vec t){ //not efficient xdxdxdxd
 	int_vec a, b; //random numbers
 	int rands = 0, j, k, num_char = 0;
@@ -108,7 +109,7 @@ void write_multiple(txt_file& file, read_file& file2, str_vec t){ //not efficien
 			}
 		}
 	}
-	for (int i = 0; i < 1000; i++){
+	for (int i = 0; i < 10000; i++){
 		rands = 0;
 		num_char = 0;
 		for (j = 0; j < what_to_insert.size(); j++){

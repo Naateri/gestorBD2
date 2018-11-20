@@ -7,6 +7,7 @@
 #include <fstream>
 #include <cstdio>
 #include <ctime>
+#include "AVLtree.h"
 
 //defines mainly used for comparators
 #define SMALLER <
@@ -37,3 +38,5 @@ typedef std::vector<int> int_vec;
 typedef std::stringstream ss;
 typedef std::ofstream txt_file;
 typedef std::ifstream read_file;
+typedef AVLtree<std::string> str_tree;
+typedef std::vector<str_tree*> tree_vec;
