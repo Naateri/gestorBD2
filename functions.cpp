@@ -18,6 +18,13 @@ int stringToInt(str a){
 	return ret;
 }
 
+str intToString(int a){
+	str ret;
+	ss leString;
+	leString << a;
+	return leString.str();
+}
+
 LL stringToLL(str a){
 	LL ret;
 	ss convi(a);
@@ -112,21 +119,45 @@ void write_multiple(txt_file& file, read_file& file2, str_vec t){ //not efficien
 	for (int i = 0; i < 10000; i++){
 		rands = 0;
 		num_char = 0;
+		str lel;
+		lel.clear();
 		for (j = 0; j < what_to_insert.size(); j++){
 			if (what_to_insert.at(j) == 0){
-				if (j != what_to_insert.size() - 1) file << i+1 << ',';
-				else file << i+1 << '\n';
+				if (j != what_to_insert.size() - 1) {
+					lel += intToString(i+1) + ',';
+					//file << i+1 << ',';
+				}
+				else{
+					//file << i+1 << '\n';
+					lel += intToString(i+1) + '|';
+				}
 			}
 			else if (what_to_insert.at(j) == 1){
-				if (j != what_to_insert.size() - 1) file << rand_between(a.at(rands), b.at(rands)) << ',';
-				else file << rand_between(a.at(rands), b.at(rands)) << '\n';
+				if (j != what_to_insert.size() - 1){
+					//file << rand_between(a.at(rands), b.at(rands)) << ',';
+					lel += intToString(rand_between(a.at(rands), b.at(rands))) + ',';
+				}
+				else {
+					//file << rand_between(a.at(rands), b.at(rands)) << '\n';
+					lel += intToString(rand_between(a.at(rands), b.at(rands))) + '|';
+				}
 				rands++;
 			} else {				
-				if (j != what_to_insert.size() - 1) file << chars.at(num_char) << i+1 << ',';
-				else file << chars.at(num_char) << i+1 << '\n';
+				if (j != what_to_insert.size() - 1){
+					//file << chars.at(num_char) << i+1 << ',';
+					lel += chars.at(num_char) + intToString(i+1) + ',';
+				}
+				else {
+					//file << chars.at(num_char) << i+1 << '\n';
+					lel += chars.at(num_char) + intToString(i+1) + '|';
+				}
 				num_char++;
 			}
 		}
+		
+		while (lel.size() <= 35) lel += ' ';
+		lel += '\n';
+		file << lel;
 		/*if (i != 1000 - 1) file << ',';
 		else file << '\n';*/
 	}

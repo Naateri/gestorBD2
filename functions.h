@@ -8,6 +8,8 @@ int rand_between(int a, int b);
 
 int stringToInt(str a);
 
+str intToString(int a);
+
 LL stringToLL(str a);
 
 void print_vec(strp_vec vec, char_name_vec cvec);

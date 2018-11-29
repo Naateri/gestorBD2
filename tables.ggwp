@@ -9,16 +9,3 @@ id INTEGER
 nombre VARCHAR(100)
 dpto INTEGER
 -----------------------------------------
-
-persona
-id INTEGER
-nombre VARCHAR(100)
-dpto INTEGER
------------------------------------------
-
-persona
-id INTEGER
-nombre VARCHAR(100)
-dpto INTEGER
------------------------------------------
-
