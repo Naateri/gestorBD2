@@ -1,4 +1,5 @@
 #include "functions.h"
+#define ROWS_TO_INSERT 1000000
 
 int rdtsc(){
 	__asm__ __volatile__("rdtsc");
@@ -93,13 +94,19 @@ void write_multiple(txt_file& file, read_file& file2, str_vec t){ //not efficien
 	}
 	getline(file2, num);
 	j = 0;
+	/*std::cout << "what_to_insert: ";
+	for (int i = 0; i < what_to_insert.size(); i++){
+		std::cout << what_to_insert.at(i) << ' ';
+	}
+	std::cout << std::endl; */
 	for (int i = 0; i < what_to_insert.size(); i++){
 		char_inserted = 0;
 		if (what_to_insert.at(i) == 2){
 			k = 0;
+			j = 0;
 			le_text.clear();
 			while((j) < num.size() ){
-				if (num[j] == ','){
+				if (num[j] == ',' || num[j] == '\n'){
 					if (k == i){
 						chars.push_back(le_text);
 						char_inserted = 1;
@@ -116,7 +123,7 @@ void write_multiple(txt_file& file, read_file& file2, str_vec t){ //not efficien
 			}
 		}
 	}
-	for (int i = 0; i < 10000; i++){
+	for (int i = 0; i < ROWS_TO_INSERT; i++){ //modify this
 		rands = 0;
 		num_char = 0;
 		str lel;
@@ -129,7 +136,7 @@ void write_multiple(txt_file& file, read_file& file2, str_vec t){ //not efficien
 				}
 				else{
 					//file << i+1 << '\n';
-					lel += intToString(i+1) + '|';
+					lel += intToString(i+1) + ' ';
 				}
 			}
 			else if (what_to_insert.at(j) == 1){
@@ -139,7 +146,7 @@ void write_multiple(txt_file& file, read_file& file2, str_vec t){ //not efficien
 				}
 				else {
 					//file << rand_between(a.at(rands), b.at(rands)) << '\n';
-					lel += intToString(rand_between(a.at(rands), b.at(rands))) + '|';
+					lel += intToString(rand_between(a.at(rands), b.at(rands))) + ' ';
 				}
 				rands++;
 			} else {				
@@ -149,13 +156,13 @@ void write_multiple(txt_file& file, read_file& file2, str_vec t){ //not efficien
 				}
 				else {
 					//file << chars.at(num_char) << i+1 << '\n';
-					lel += chars.at(num_char) + intToString(i+1) + '|';
+					lel += chars.at(num_char) + intToString(i+1) + ' ';
 				}
 				num_char++;
 			}
 		}
 		
-		while (lel.size() <= 35) lel += ' ';
+		while (lel.size() <= 59) lel += ' ';
 		lel += '\n';
 		file << lel;
 		/*if (i != 1000 - 1) file << ',';

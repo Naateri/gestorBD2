@@ -641,7 +641,7 @@ void DataBase::insert_multiple(str query){ //INSERTAR VARIOS EN tabla I/Rnum1,nu
 	int i;
 	
 	if (!interpret_query_i_m(query, name, vec)) return;
-	std::cout << "Insertando 1000 filas en " << name << std::endl;
+	std::cout << "Insertando varias filas en " << name << std::endl;
 	name += ".table";
 	char* file_name = new char[name.size() + 1];
 	for (i = 0; i < name.size(); i++){
