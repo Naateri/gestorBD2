@@ -9,3 +9,21 @@ id INTEGER
 nombre VARCHAR(100)
 dpto INTEGER
 -----------------------------------------
+dj_pichula
+i INTEGER
+xd VARCHAR(20)
+xd2 VARCHAR(30)
+caca INTEGER
+-----------------------------------------
+
+prueba2
+hola INTEGER
+adios VARCHAR(20)
+-----------------------------------------
+
+JUANGO
+inteligencia INTEGER
+HUANQUI VARCHAR(20)
+ptm INTEGER
+-----------------------------------------
+

@@ -35,9 +35,20 @@ void writeTable(txt_file& file, Table* t){
 
 void writeHeaderTable(txt_file& file, Table* t){
 	int j = 0;
+	str alg;
+	alg.clear();
 	for(int i = 0; i < t->t_data->names.size(); i++){
-		if (i != t->t_data->names.size()-1) file << t->t_data->names.at(i).second << ','; //STORED: DATA_NAME,DATA_NAME,... ENDL 
-		else file << t->t_data->names.at(i).second;
+		//alg += (t->t_data->names.at(i).second + ',');
+		if (i != t->t_data->names.size()-1){
+			//file << t->t_data->names.at(i).second << ','; //STORED: DATA_NAME,DATA_NAME,... ENDL 
+			alg += (t->t_data->names.at(i).second + ',');
+		}
+		else {
+			//file << t->t_data->names.at(i).second;
+			alg += t->t_data->names.at(i).second;
+		}
 	}
-	file << '\n'; //SEPARATION FOR THE DATA TO BE STORED
+	//while (alg.size() <= 59) alg += ' ';
+	alg += '\n'; //SEPARATION FOR THE DATA TO BE STORED
+	file << alg;
 }
