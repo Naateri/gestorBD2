@@ -891,10 +891,12 @@ str_vec DataBase::select_query(read_file& file, str_vec columns, str name, str c
 		for(i = 0; i < temp2.size(); i++){
 			if ( temp2.at(i) == ',' ) {
 				temp3 = temp_name;
+				temp3.erase(std::remove_if(temp3.begin(), temp3.end(), isspace), temp3.end());
 				if (pos == position){
 					last_col = 1;
 					if (type == 0){ //do the cast to the type it is
 						value_found = stringToLL(temp3);
+						//value_found.erase(std::remove_if(value_found.begin(), value_found.end(), isspace), value_found.end())
 						val_to_compare = stringToLL(values_to_compare.at(0) );
 						this->query_where = 1;
 						if (this->comparator == 0){
@@ -910,6 +912,7 @@ str_vec DataBase::select_query(read_file& file, str_vec columns, str name, str c
 						}
 					} else if (type == 1){
 						vchar_value_found = temp3;
+						//vchar_value_found.erase(std::remove_if(vchar_value_found.begin(), vchar_value_found.end(), isspace), vchar_value_found.end())
 						vchar_val_to_compare = values_to_compare.at(0);
 						if (this->comparator == 0){
 							if (vchar_value_found == vchar_val_to_compare) to_insert = 1;
@@ -939,10 +942,12 @@ str_vec DataBase::select_query(read_file& file, str_vec columns, str name, str c
 		}
 		if (! last_col ){ //doing one last iteration
 			temp3 = temp_name;
+			temp3.erase(std::remove_if(temp3.begin(), temp3.end(), isspace), temp3.end());
 			if (pos == position){
 				last_col = 1;
 				if (type == 0){ //do the cast to the type it is
 					value_found = stringToLL(temp3);
+					//value_found.erase(std::remove_if(value_found.begin(), value_found.end(), isspace), value_found.end())
 					val_to_compare = stringToLL(values_to_compare.at(0) );
 					this->query_where = 1;
 					if (this->comparator == 0){
@@ -958,12 +963,10 @@ str_vec DataBase::select_query(read_file& file, str_vec columns, str name, str c
 					}
 				} else if (type == 1){
 					vchar_value_found = temp3;
+					//vchar_value_found.erase(std::remove_if(vchar_value_found.begin(), vchar_value_found.end(), isspace), vchar_value_found.end())
 					vchar_val_to_compare = values_to_compare.at(0);
 					if (this->comparator == 0){
 						if (vchar_value_found == vchar_val_to_compare) to_insert = 1;
-					}
-					else if (this->comparator == 1){
-						if (vchar_value_found > vchar_val_to_compare) to_insert = 1;
 					}
 					else {
 						if (vchar_value_found == vchar_val_to_compare) to_insert = 1;
@@ -1006,14 +1009,13 @@ void DataBase::select_query2(read_file& file, str_tree* m_tree, str column){
 			break;
 		j++;
 	}
-
+	int id_fila = 1;
 	while (! file.eof() ){
 		j = 0;
 		i = 0;
 		temp_fila.clear();
 		temp.clear();
 		getline(file, temp_fila);
-		
 
 		while(j <= temp_fila.size())
 	 	{
@@ -1028,11 +1030,13 @@ void DataBase::select_query2(read_file& file, str_tree* m_tree, str column){
 			}
 			else
 			{
-				m_tree->insert(temp, temp_fila);
+				temp.erase(std::remove_if(temp.begin(), temp.end(), isspace), temp.end());
+				m_tree->insert(temp, intToString(id_fila));
 				break;
 			}
-			j++;
+			j++;		
 		}
+		id_fila++;
 	}
 	
 }
