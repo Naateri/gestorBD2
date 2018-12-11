@@ -13,6 +13,8 @@ txt_file tables_txt;
 read_file tables_txt2;
 unsigned t0, t1;
 
+bool index_query;
+
 DataBase::DataBase(){
 	;
 }
@@ -663,6 +665,7 @@ void DataBase::insert_multiple(str query){ //INSERTAR VARIOS EN tabla I/Rnum1,nu
 void DataBase::select_data(str query){ // SELECT * FROM pruebita
 	str name, result, column, temp_name;
 	str_vec vec;
+	char* index_q;
 	int i;
 	result.clear();
 
@@ -678,15 +681,33 @@ void DataBase::select_data(str query){ // SELECT * FROM pruebita
 	tables_txt2.open(file_name, std::fstream::app);
 	//get the info from the select clause
 	vec = this->select_query(tables_txt2, vec, temp_name, column);
-	tables_txt2.close();
+	//tables_txt2.close();
 
 	delete [] file_name;
 	
-	for (int i = 0; i < vec.size(); i++){
-		std::cout << vec.at(i) << '\n';
+	//if (index_query){
+	if (this->index_eval){
+		for (int i = 0; i < vec.size(); i++){
+			index_q = new char[61];
+			//std::cout << "iter: " << i << std::endl;
+			//std::cout << "column: " << vec.at(i) << std::endl;
+			//std::cout << "seekg: " << 24 + i + 60 * (stringToInt(vec.at(i))-1) << std::endl;
+			tables_txt2.seekg(24 + (61 * (stringToInt(vec.at(i))-1)), std::ios_base::beg);
+			tables_txt2.read(index_q, 61);
+			//std::cout << index_q << '\n';
+			std::cout.write(index_q,61);
+			delete[] index_q;
+		}
+		index_query = 0;
+	} else {
+		for (int i = 0; i < vec.size(); i++){
+			std::cout << vec.at(i) << '\n';
+		}
 	}
-	
 	this->query_where = 0;
+	index_query = 0;
+	this->index_eval = 0;
+	tables_txt2.close();
 }
 
 void DataBase::delete_data(str query){
@@ -821,8 +842,10 @@ str_vec DataBase::select_query(read_file& file, str_vec columns, str name, str c
 		u_int pos_index = indices.size()+1;
 		for (int i = 0; i < indices.size(); i++)
 		{	
-			if(indices[i]->m_name_index == values_to_compare[1])			
-				pos_index = i;		
+			if(indices[i]->m_name_index == values_to_compare[1]){			
+				pos_index = i;
+				break;
+			}
 		}
 
 		if(pos_index == indices.size()+1) {
@@ -830,12 +853,13 @@ str_vec DataBase::select_query(read_file& file, str_vec columns, str name, str c
 			return res;
 		}
 		if(indices[pos_index]->m_name_table != name) {
-			std::cout << "No coinside la tabla del indice" << std::endl;
+			std::cout << "No coincide la tabla del indice" << std::endl;
 			return res;
 		}
 
 		//indices[pos_index]->inOrder();
-
+		index_query = 1;
+		this->index_eval = 1;
 		return indices[pos_index]->find(values_to_compare[0]);
 	}
 

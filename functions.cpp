@@ -53,10 +53,17 @@ void print_vec(strp_vec vec, char_name_vec cvec){
 }
 
 void writeInsert(txt_file& file, str_vec t){
+	str temp;
+	temp.clear();
 	for (int i = 0; i < t.size(); i++){
-		if (i != t.size() - 1) file << t.at(i) << ',';
-		else file << t.at(i) << '\n';
+		if (i != t.size() - 1) temp += (t.at(i) + ',');
+			//file << t.at(i) << ',';
+		else temp += (t.at(i) + ' ');
+			//file << t.at(i) << ' ';
 	}
+	while (temp.size() <= 59) temp += ' ';
+	temp += '\n';
+	file << temp;
 	//file << '\n';
 }
 
