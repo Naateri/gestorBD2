@@ -1,7 +1,16 @@
 
 #include "AVLtree.h"
+#include <sstream>
+
+int stringToInt2(std::string a){
+	int ret;
+	std::stringstream convi(a);
+	convi >> ret;
+	return ret;
+}
 
 /* AVL class definition */
+
 template <class T>
 void AVLtree<T>::rebalance(AVLnode<T> *n) {
     setBalance(n);
@@ -117,6 +126,7 @@ AVLtree<T>::AVLtree(std::string mmi, std::string mmc, std::string mmt) : root(NU
     m_name_index = mmi;
     m_name_col = mmc; 
     m_name_table = mmt;
+	root = 0;
 }
  
 template <class T>
@@ -159,7 +169,7 @@ bool AVLtree<T>::insert(T key, std::string st) {
             }
         }
     }
- 
+	if (stringToInt2(key) % 10000 == 0) std::cout << "Value " << key << " inserted.\n";
     return true;
 }
  
@@ -254,14 +264,16 @@ void AVLtree<T>::writeFile(std::ofstream& file, AVLnode<T> *n)
 template <class T>
 std::vector< std::string > AVLtree<T>::find(T tem) {
     
-    return find(tem, root);
+    return find(tem, this->root);
 }
 
 template <class T>
 std::vector< std::string > AVLtree<T>::find(T tem, AVLnode<T> *n) {
     std::vector< std::string > r;
     r.push_back("nel");
+	//std::cout << "cur key: " << n->key << ", looking for: " << tem << std::endl;
     while (n != NULL) {
+		//std::cout << "cur key: " << n->key << ", looking for: " << tem << std::endl;
         //std::cout << n->key << std::endl;
         if (n->key == tem) {
             return n->m_str;
@@ -272,7 +284,41 @@ std::vector< std::string > AVLtree<T>::find(T tem, AVLnode<T> *n) {
         else
             n = n->right;
     }
+	//std::cout << "column: " << r.at(0);
     return r;
+}
+
+template <class T>
+AVLnode<T>* AVLtree<T>::build_from_vec(std::vector<std::string> values, AVLnode<T>*& cur){
+	//std::cout << "values size: " << values.size() << std::endl;
+	if (values.size() <= 0){
+	//	std::cout << "null\n";
+		return NULL;
+	}
+	//std::vector<std::string> left_values, right_values;
+	
+	int mid = values.size() / 2;
+	cur = new AVLnode<T>(values.at(mid),values.at(mid), 0);
+	
+	std::vector<std::string> left_values(values.begin(), values.begin() + mid);
+	cur->left = build_from_vec(left_values, cur->left);
+	
+	std::vector<std::string> right_values(values.begin() + mid + 1, values.end());
+	cur->right = build_from_vec(right_values, cur->right);
+	
+	return cur;
+	
+	//if (start > end) 
+	//	return NULL; 
+	
+	//int mid = (start + end)/2; 
+	//cur = new AVLnode<T>(values.at(mid),values.at(mid), 0); 
+	
+	//root->left =  build_from_vec(arr, start, mid-1); 
+	
+	//root->right = build_from_vec(arr, mid+1, end); 
+	
+	return root; 
 }
 
 template class AVLtree<std::string>;

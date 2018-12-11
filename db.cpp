@@ -212,11 +212,17 @@ bool DataBase::interpret_query_aRam(str query, str& name_index) {
 		name_index += query[i];
 		i++;
 	}
-
+	
+	
 	if (query[i+1] != ';')
 	{
 		std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.3\n";
 		return 0;
+	}
+	
+	if (name_index[0] == 'i' && name_index[1] == 'd'){
+		this->id_index = 1; //id tree
+		std::cout << "index name: " << name_index << '\n';
 	}
 
 	return 1;	
@@ -607,12 +613,23 @@ void DataBase::aRam(str query) {
 
 	str_tree *m_tree =  new str_tree(name_index, temp_name_col, temp_name_table);
 	std::cout << "init read" << std::endl;
-	this->read_index(tables_txt2, m_tree);
+	if (this->id_index){
+		//std::cout << "id index\n";
+		str_vec values;
+		values.clear();
+		values = this->id_values(file_name);
+		std::cout << "id index. values read. starting to build tree\n";
+		std::cout << "amount of values: " << values.size() << std::endl;
+		m_tree->build_from_vec(values, m_tree->root);
+		std::cout << "root value: " << m_tree->root->key << std::endl;
+	}
+	else this->read_index(tables_txt2, m_tree);
 	std::cout << "end read" << std::endl;
 	tables_txt2.close();
 
 	indices.push_back(m_tree);
 	//m_tree->inOrder();
+	this->id_index = 0;
 }
 
 void DataBase::insert_row(str query){
@@ -1424,4 +1441,29 @@ void DataBase::update_query(read_file& file, txt_file& outfile, str_vec columns,
 		this->to_insert = 0;
 		first_line = false;
 	}
+}
+
+str_vec DataBase::id_values(char* name){
+	str_vec values;
+	str value, real_value;
+	int i;
+	read_file index_file;
+	
+	index_file.open(name);
+	getline(index_file, value);
+	while (! index_file.eof() ){
+		//std::cout << "pushing value\n";
+		i = 0;
+		real_value.clear();
+		getline(index_file, value);
+		//std::cout << "line read: " << value << std::endl;
+		while (value[i] != ';'){
+			real_value += value[i];
+			i++;
+		}
+		values.push_back(real_value);
+		//std::cout << real_value << "pushed\n";
+	}
+	index_file.close();
+	return values;
 }

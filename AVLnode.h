@@ -17,7 +17,7 @@ public:
  	
 
     AVLnode(T k, std::string st, AVLnode *p) : key(k), balance(0), parent(p),
-                        left(NULL), right(NULL) { m_str.push_back(st); }
+                        left(NULL), right(NULL) { m_str.push_back(st); left = 0; right = 0; }
  
     ~AVLnode() {
         delete left;

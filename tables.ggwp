@@ -17,3 +17,24 @@ apellido VARCHAR(20)
 edad INTEGER
 -----------------------------------------
 
+alumnos_10
+id INTEGER
+nombre VARCHAR(20)
+apellido VARCHAR(20)
+edad INTEGER
+-----------------------------------------
+
+alumnos_1
+id INTEGER
+nombre VARCHAR(20)
+apellido VARCHAR(20)
+edad INTEGER
+-----------------------------------------
+
+alumnos_5
+id INTEGER
+nombre VARCHAR(20)
+apellido VARCHAR(20)
+edad INTEGER
+-----------------------------------------
+

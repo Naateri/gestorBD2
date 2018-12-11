@@ -6,7 +6,7 @@ class DataBase{
 private:
 	table_vec tables;
 	tree_vec indices;
-	bool query_index, query_where, to_insert, index_eval;
+	bool query_index, query_where, to_insert, index_eval, id_index;
 	str_vec values_to_compare;	
 	int comparator; //0: EQUAL, 1: GREATER, 2: EQUAL
 	
@@ -38,4 +38,5 @@ public:
 	void update_data(str query);
 	void insert_multiple(str query);
 	void aRam(str query);
+	str_vec id_values(char* name);
 };

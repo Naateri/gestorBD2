@@ -1,5 +1,5 @@
 #include "functions.h"
-#define ROWS_TO_INSERT 1000
+#define ROWS_TO_INSERT 5000000
 
 int rdtsc(){
 	__asm__ __volatile__("rdtsc");
