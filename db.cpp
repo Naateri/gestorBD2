@@ -2,6 +2,7 @@
 
 str create_tab = "CREATE TABLA ";
 str insert_into = "INSERTAR EN "; //11
+str insert_index = "INSERTAR CON INDICE EN ";
 str select_q = "SELECT * FROM ";
 str del = "DELETE FROM ";
 str upd = "UPDATE FROM ";
@@ -39,6 +40,11 @@ void DataBase::i_query(str query){
 	temp = query.substr(0, 12); //temp = "INSERTAR EN "
 	if (temp == insert_into){
 		insert_row(query);
+		return;
+	}
+	temp = query.substr(0, 23); //temp = insert_index = "INSERTAR CON INDICE EN nombre_tabla VALORES ;"
+	if (temp == insert_index){
+		insert_row_index(query);
 		return;
 	}
 	temp = query.substr(0, 14); //temp = "SELECT * FROM "
@@ -260,6 +266,83 @@ bool DataBase::interpret_query_i(str query, str& name, str_vec& values){
 		i++;
 		values.push_back(temp);
 	}
+	return 1;
+}
+
+bool DataBase::interpret_query_i_index(str query, str& name, str_vec& values, str_vec& name_indices, int_vec& num_col, str& num_fila){
+	str temp, temp2, temp3, _num;
+	int i;
+	values.clear();
+	temp = query.substr(0, 23); //temp = "INSERTAR CON INDICE EN "
+	
+	if (temp != insert_index){
+		std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.1\n";
+		return 0;
+	}
+	i = 23;
+	name.clear();
+	while (query[i] != ' '){ //getting the name of the table
+		name += query[i];
+		i++;
+	}
+	i++; //so query[i] != ' '
+	for (int j = 0; j < 8; j++){
+		temp2 += query[i++];
+	}
+	if (temp2 != "VALORES "){
+		std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.2\n";
+		return 0;
+	}
+	while (query[i] != 'I' && query[i] != ' '){
+		temp.clear();
+		while (query[i] != ' ' && query[i] != ';'){ //filling with type
+			temp += query[i];
+			i++;
+		}
+		i++;
+		values.push_back(temp);
+	}
+	
+	///INSERTAR CON INDICE EN alumnos_maz_nah VALORES 1001 nombre1001 apellido1001 99 INDICE prueba_edad.idx(3) prueba_idx.idx(0) S1001 ;
+	///SELECT * FROM alumnos_maz_nah WHERE id = 1001 IDX = prueba_idx.idx ;	
+	temp3 = "";
+	for (int j = 0; j < 7; j++){
+		temp3 += query[i++];
+	}
+	if (temp3 != "INDICE "){
+		std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.3\n";
+		return 0;
+	}
+	//"INSERTAR CON INDICE nombre VALUES val1 INDICE ind.idx(2) ind"
+	while (query[i] != 'S' && query[i] != ' '){
+		temp.clear();
+		while (query[i] != ' ' && query[i] != ';'){ //filling with type
+			if(query[i] == '(')
+			{
+				i++;
+				_num.clear();
+				while (query[i] != ')')
+				{
+					_num += query[i];
+					i++;
+				}
+				num_col.push_back(stringToInt(_num));
+				i++;
+				break;
+			}
+			temp += query[i];
+			i++;			
+		}
+		i++;
+		name_indices.push_back(temp);
+	}
+	i++;
+	num_fila.clear();
+	while (query[i] != ' ' && query[i] != ';')
+	{
+		num_fila += query[i];
+		i++;
+	}	
 	return 1;
 }
 
@@ -656,6 +739,45 @@ void DataBase::insert_row(str query){
 	delete [] file_name;
 	std::cout << "Datos insertados.\n";	
 }
+
+void DataBase::insert_row_index(str query){ 
+	///INSERTAR CON INDICES EN nombre_tabla VALUES value_1 caluer2 INDICES name.idx(2) nameidx(1)
+	str name;
+	str_vec vec;
+	str_vec name_index;
+	int_vec num_col;
+	str num_fila;
+	int i;
+	
+	if (!interpret_query_i_index(query, name, vec, name_index, num_col, num_fila)) return;
+	name += ".table";
+	char* file_name = new char[name.size() + 1];
+	for (i = 0; i < name.size(); i++){
+		file_name[i] = name.at(i);
+	}
+	
+	file_name[i] = '\0';
+	tables_txt.open(file_name, std::fstream::app);
+	//write the info retrieved to file_name
+	writeInsert(tables_txt, vec);
+	tables_txt.close();
+	
+	delete [] file_name;
+	
+	for (int i = 0; i < indices.size(); i++) 
+	{	
+		for(int j = 0; j < name_index.size(); j++)
+		{
+			if(indices[i]->m_name_index == name_index[j])			
+			{
+				indices[i]->insert(vec[num_col[j]], num_fila);
+			}					
+		}	
+	}
+	
+	std::cout << "Datos insertados.\n";	
+}
+
 
 void DataBase::insert_multiple(str query){ //INSERTAR VARIOS EN tabla I/Rnum1,num2/C ;
 	str name;

@@ -50,4 +50,9 @@ Se ponen tantas letras como campos haya.
 
   >SELECT * FROM tabla WHERE columna = valor IDX = index.idx ;
 
+## Actualizar índices
+  >INSERTAR CON INDICE EN nombre-tabla VALORES value-1 value-2 ... value-n INDICE index1-name.idx(column) index2-name.idx(column) S(CurrentMaxRow+1) ;
+
+Donde luego de VALORES van todos los valores a ser insertados, luego de INDICE el nombre del índice indicando que columna es (contando desde 0, ej: si la tabla tiene las columnas "id, nombre, apellido, edad" sería id.idx(0) edad.idx(3)), y CurrentMaxRow+1 la fila que sigue (ej: si hay 1000 filas en su tabla, tendría que poner S1001).
+
 ### NO OLVIDARSE DE PONER ESPACIO ; LUEGO DE CADA SENTENCIA EXCEPTO A RAM
