@@ -55,4 +55,12 @@ Se ponen tantas letras como campos haya.
 
 Donde luego de VALORES van todos los valores a ser insertados, luego de INDICE el nombre del índice indicando que columna es (contando desde 0, ej: si la tabla tiene las columnas "id, nombre, apellido, edad" sería id.idx(0) edad.idx(3)), y CurrentMaxRow+1 la fila que sigue (ej: si hay 1000 filas en su tabla, tendría que poner S1001).
 
+  >ELIMINAR CON INDICE EN nombre-tabla WHERE atributo = valor INDICE indice-a-actualizar.idx ;
+
+  >UPDATE CON INDICE EN nombre-tabla SET atributo = valor WHERE atributo = valor INDICE indice-a-actualizar.idx ;
+
+Es importante que los indices a actualizar estén cargados en ram (A RAM), si no, no se podrán apreciar los efectos de las consultas.
+
+(Nota: con las tablas grandes, no funciona con los índices de id's)
+
 ### NO OLVIDARSE DE PONER ESPACIO ; LUEGO DE CADA SENTENCIA EXCEPTO A RAM
