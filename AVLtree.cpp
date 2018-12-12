@@ -270,7 +270,7 @@ std::vector< std::string > AVLtree<T>::find(T tem) {
 template <class T>
 std::vector< std::string > AVLtree<T>::find(T tem, AVLnode<T> *n) {
     std::vector< std::string > r;
-    r.push_back("1"); //change if wanting to cheat because stupid crap fails with small id's for some reason
+    r.push_back("-1"); //change if wanting to cheat because stupid crap fails with small id's for some reason
 	//std::cout << "cur key: " << n->key << ", looking for: " << tem << std::endl;
     while (n != NULL) {
 		//std::cout << "cur key: " << n->key << ", looking for: " << tem << std::endl;

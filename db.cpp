@@ -1004,16 +1004,20 @@ void DataBase::select_data(str query){ // SELECT * FROM pruebita
 		tables_txt2.read(first_row, 24);
 		std::cout.write(first_row, 24);
 		delete[] first_row;
-		for (int i = 0; i < vec.size(); i++){
-			index_q = new char[61];
-			//std::cout << "iter: " << i << std::endl;
-			//std::cout << "column: " << vec.at(i) << std::endl;
-			//std::cout << "seekg: " << 24 + i + 60 * (stringToInt(vec.at(i))-1) << std::endl;
-			tables_txt2.seekg(24 + (61 * (stringToInt(vec.at(i))-1)), std::ios_base::beg);
-			tables_txt2.read(index_q, 61);
-			//std::cout << index_q << '\n';
-			std::cout.write(index_q,61);
-			delete[] index_q;
+		if (vec.size() == 1 && vec.at(0) == "-1"){
+			std::cout << "No se encontro el valor buscado.\n";
+		} else {
+			for (int i = 0; i < vec.size(); i++){
+				index_q = new char[61];
+				//std::cout << "iter: " << i << std::endl;
+				//std::cout << "column: " << vec.at(i) << std::endl;
+				//std::cout << "seekg: " << 24 + i + 60 * (stringToInt(vec.at(i))-1) << std::endl;
+				tables_txt2.seekg(24 + (61 * (stringToInt(vec.at(i))-1)), std::ios_base::beg);
+				tables_txt2.read(index_q, 61);
+				//std::cout << index_q << '\n';
+				std::cout.write(index_q,61);
+				delete[] index_q;
+			}
 		}
 		index_query = 0;
 	} else {
