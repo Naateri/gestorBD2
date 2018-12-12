@@ -19,6 +19,7 @@ private:
 	bool interpret_query_u(str query, str& name, str_vec& values, str& column, str_vec& columns);
 	bool interpret_query_i_m(str query, str& name, str_vec& values);
 	bool interpret_query_i_index(str query, str& name, str_vec& values, str_vec& name_indices, int_vec& num_col, str& num_fila);
+	bool interpret_query_d_index(str query, str& name, str_vec& values, str& column, str& name_index, str& num_col);
 	
 	str_vec select_query(read_file& file, str_vec columns, str name, str column); //each position at the vec returned is a row of data
 	void select_query2(read_file& file, str_tree* m_tree, str column);
@@ -37,6 +38,7 @@ public:
 	void insert_row_index(str query);
 	void select_data(str query);
 	void delete_data(str query);
+	void delete_data_index(str query);
 	void update_data(str query);
 	void insert_multiple(str query);
 	void aRam(str query);
