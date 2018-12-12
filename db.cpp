@@ -7,6 +7,7 @@ str select_q = "SELECT * FROM ";
 str del = "DELETE FROM ";
 str delete_index = "ELIMINAR CON INDICE EN ";
 str upd = "UPDATE FROM ";
+str upd_index = "UPDATE CON INDICE EN ";
 str multi_insert = "INSERTAR VARIOS EN ";
 str create_index = "CREATE INDEX ";
 str a_ram = "A RAM (";
@@ -51,6 +52,11 @@ void DataBase::i_query(str query){
 	temp = query.substr(0, 23); //temp = insert_index = "ELIMINAR CON INDICE EN nombre_tabla VALORES ;"
 	if (temp == delete_index){
 		delete_data_index(query);
+		return;
+	}
+	temp = query.substr(0, 21); //"UPDATE CON INDICE EN "
+	if (temp == upd_index){
+		update_data_index(query);
 		return;
 	}
 	temp = query.substr(0, 14); //temp = "SELECT * FROM "
@@ -619,6 +625,99 @@ bool DataBase::interpret_query_u(str query, str& name, str_vec& values, str& col
 	return 1;
 }
 
+bool DataBase::interpret_query_u_index(str query, str& name, str_vec& values, str_vec& name_indices, str& column, str_vec& columns){
+	str temp, temp2, temp3, _num;
+	int i;
+	values.clear();              //UPDATE CON INDICE EN tabla SET atributo = valor WHERE atributo = valor INDICE index1-name.idx ;
+	temp = query.substr(0, 21); //temp = "UPDATE CON INDICE EN "
+	//UPDATE CON INDICE EN alumnos_maz_nah SET edad = 4 WHERE edad = 1 INDICE prueba_edad.idx ;
+	if (temp != upd_index){
+		std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.1\n";
+		return 0;
+	}
+	i = 21;
+	name.clear();
+	while (query[i] != ' '){ //getting the name of the table
+		name += query[i];
+		i++;
+	}
+	i++; //so query[i] != ' '
+	for (int j = 0; j < 4; j++){
+		temp2 += query[i++];
+	}
+	if (temp2 != "SET "){
+		std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.2\n";
+		return 0;
+	}
+	while ( /*query[i] != 'W' && */query[i] != ' '){
+		temp.clear();
+		if (query[i] == 'W'){
+			temp2.clear();
+			for (int j = 0; j < 6; j++){
+				temp2 += query[i+j];
+			}
+			if (temp2 == "WHERE ") break;
+		}
+		temp2.clear();
+		while (query[i] != ' ' && query[i] != ';'){ //filling with type
+			temp += query[i];
+			i++;
+		}
+		i++;
+		columns.push_back(temp);
+		if (query[i] != '=') {
+			std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.\n";
+			return 0;
+		}
+		i++;
+		i++; //i is not empty now
+		temp2.clear();
+		while (query[i] != ' '){ //value
+			temp2 += query[i++];
+		}
+		values.push_back(temp2);
+		i++; //space omitted
+	}
+	i += 6; //ommitting "WHERE "
+	this->query_where = 1; //WHERE SYNTAX ENABLED
+	this->values_to_compare.clear(); //where the values to compare will be added
+	char comp;
+	column.clear();
+	while (query[i] != ' '){
+		column += query[i++]; //column name is being stored
+	}
+	i++; //i should now be the comparator
+	comp = query[i++]; //comp is the comparator, and i is a space
+	//this->comparator = findInArray(comp, comparisons, 3);
+	this->comparator = 0;
+	//if comp is not in comparisons std::cout << "Comparador no permitido.\n";
+	i++;
+	temp.clear(); //this should be inside another loop
+	//Will be fixed when I have to do boolean operators
+	while (query[i] != ' '){ //getting the value of the atribute
+		temp += query[i];
+		i++;
+	}
+	this->values_to_compare.push_back(temp);
+	i++;
+	temp3 = "";
+	for (int j = 0; j < 7; j++){
+		temp3 += query[i++];
+	}
+	if (temp3 != "INDICE "){
+		std::cout << "Sintaxis incorrecta. Vuelva a intentarlo.3\n";
+		return 0;
+	}
+	//"INSERTAR CON INDICE nombre VALUES val1 INDICE ind.idx(2) ind"
+	temp.clear();
+	while (query[i] != ' ' && query[i] != ';'){ //filling with type
+		temp += query[i];
+		i++;
+	}
+	name_indices.push_back(temp);
+	return 1;
+}
+
 bool DataBase::interpret_query_i_m(str query, str& name, str_vec& values){
 	str temp, temp2;
 	int i;
@@ -900,6 +999,11 @@ void DataBase::select_data(str query){ // SELECT * FROM pruebita
 	
 	//if (index_query){
 	if (this->index_eval){
+		char* first_row = new char[24];
+		tables_txt2.seekg(0);
+		tables_txt2.read(first_row, 24);
+		std::cout.write(first_row, 24);
+		delete[] first_row;
 		for (int i = 0; i < vec.size(); i++){
 			index_q = new char[61];
 			//std::cout << "iter: " << i << std::endl;
@@ -1072,6 +1176,63 @@ void DataBase::update_data(str query){
 	std::cout << "Valores actualizados.\n";
 	
 	this->query_where = 0;
+}
+
+void DataBase::update_data_index(str query){
+	str name, result, column, temp_name;
+	str_vec columns, values, name_indices;
+	txt_file outfile;
+	std::vector< std::string > temp;
+	int i;
+	result.clear();
+	
+	if (!interpret_query_u_index(query, name, values, name_indices, column, columns)) return;
+	temp_name = name;
+	temp_name = temp_name + "_temp.table"; //to create name_temp.table
+	
+	char* file_temp = new char[temp_name.size() + 1]; //data will be temporarily stored there
+	char* file_name = new char[name.size() + 1];
+	for (i = 0; i < temp_name.size(); i++){
+		file_temp[i] = temp_name.at(i);
+	}
+	file_temp[i] = '\0';
+	outfile.open(file_temp);
+	
+	temp_name = name;
+	
+	name += ".table";
+	for (i = 0; i < name.size(); i++){
+		file_name[i] = name.at(i);
+	}
+	file_name[i] = '\0';
+	tables_txt2.open(file_name, std::fstream::app);
+	this->update_query(tables_txt2, outfile, columns, values, temp_name, column); //PRETTY MUCH the same as delete_query
+	tables_txt2.close();
+	outfile.close();
+	
+	remove(file_name); //removing old data
+	std::rename(file_temp, file_name); //renaming so name.table still exists with the new data
+	
+	delete [] file_name;
+	delete [] file_temp;
+	
+	std::cout << "Valores actualizados.\n";
+	
+	this->query_where = 0;
+	
+	for (int i = 0; i < indices.size(); i++)
+	{
+		if(indices[i]->m_name_index == name_indices[0])
+		{
+			temp=indices[i]->find(values_to_compare.at(0));
+			indices[i]->deleteKey(values_to_compare.at(0));
+			for(int o=0; o < temp.size(); o++){
+				std::cout<<temp[o]<<std::endl;
+				indices[i]->insert(values[0], temp[o]);
+			}
+		}
+		
+	}
 }
 
 u_int DataBase::finding_atribute_type(str type_name, str table_name, int& pos){
@@ -1622,6 +1783,7 @@ void DataBase::update_query(read_file& file, txt_file& outfile, str_vec columns,
 		for(i = 0; i < temp2.size(); i++){ //getting the lines of data
 			if ( temp2.at(i) == ',' ) {
 				temp3 = temp_name;
+				temp3.erase(std::remove_if(temp3.begin(), temp3.end(), isspace), temp3.end());
 				if (pos == position){
 					last_col = 1;
 					if (type == 0){ //do the cast to the type it is
@@ -1670,6 +1832,7 @@ void DataBase::update_query(read_file& file, txt_file& outfile, str_vec columns,
 		}
 		if (! last_col ){ //lines to 579 to 620 (aprox)
 			temp3 = temp_name;
+			temp3.erase(std::remove_if(temp3.begin(), temp3.end(), isspace), temp3.end());
 			if (pos == position){
 				last_col = 1;
 				if (type == 0){ //do the cast to the type it is

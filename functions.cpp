@@ -222,5 +222,8 @@ str updateRow(str temp, uint_vec position, str_vec values){
 		}
 		temp = temp2;
 	}
+	while (temp.size() <= 59){
+		temp += ' ';
+	}
 	return temp;
 }
