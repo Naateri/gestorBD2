@@ -619,14 +619,17 @@ void DataBase::aRam(str query) {
 		values.clear();
 		values = this->id_values(file_name);
 		std::cout << "id index. values read. starting to build tree\n";
+		values.erase(values.begin() + values.size()-1);
 		std::cout << "amount of values: " << values.size() << std::endl;
+		std::cout << "first value: " << values.at(0) << ", last: " << values.at(values.size()-1) << std::endl;
 		m_tree->build_from_vec(values, m_tree->root);
-		std::cout << "root value: " << m_tree->root->key << std::endl;
+		//m_tree->build_from_vec2(values,0,values.size()-1);
+		//std::cout << "root value: " << m_tree->root->key << std::endl;
 	}
 	else this->read_index(tables_txt2, m_tree);
 	std::cout << "end read" << std::endl;
 	tables_txt2.close();
-
+	//m_tree->printPreorder(m_tree->root);
 	indices.push_back(m_tree);
 	//m_tree->inOrder();
 	this->id_index = 0;

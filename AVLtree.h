@@ -2,6 +2,7 @@
 #define AVLTREE_H
 
 #include <fstream>
+#include <iterator>
 #include "AVLnode.h"
 
 template <class T>
@@ -21,6 +22,8 @@ public:
     void writeFile                  (std::ofstream& file);
     std::vector< std::string > find (T tem);
 	AVLnode<T>* build_from_vec(std::vector<std::string> values, AVLnode<T>*& cur);
+	AVLnode<T>* build_from_vec2(std::vector<std::string> values, int start, int end);
+	void printPreorder(AVLnode<T>* cur);
 
 private:
  
